@@ -17,10 +17,10 @@
     async function main() {
       await liff.init({ liffId: "2007324952-Q43lPO8Y" });
 
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
+    //   if (!liff.isLoggedIn()) {
+    //     liff.login();
+    //     return;
+    //   }
 
       const profile = await liff.getProfile();
       document.getElementById("userId").innerText = profile.userId;
