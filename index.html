@@ -11,26 +11,33 @@
     <p><strong>UserID:</strong> <span id="userId"></span></p>
     <p><strong>Name:</strong> <span id="displayName"></span></p>
     <img id="userPicture" width="100" style="border-radius: 50%">
-    <button id="message">Hello, world!</button>
+    <br><br>
+    <button id="message">Gửi tin nhắn "Hello, World!"</button>
+    <br><br>
+    <button id="logout">Đăng xuất</button>
   </div>
 
   <script>
     async function main() {
-        await liff.init({
-            liffId: "2007340451-wYm29oGO"
+      await liff.init({
+        liffId: "2007340451-wYm29oGO",
+        withLoginOnExternalBrowser: true
+      });
+
+      if (!liff.isLoggedIn()) {
+        liff.login({
+          scope: "profile openid chat_message.write"
         });
+        return;
+      }
 
-        if (!liff.isLoggedIn()) {
-            liff.login(); 
-            return;
-        }
-
+      // Lấy profile
       const profile = await liff.getProfile();
       document.getElementById("userId").innerText = profile.userId;
       document.getElementById("displayName").innerText = profile.displayName;
       document.getElementById("userPicture").src = profile.pictureUrl;
 
-      // Thêm sự kiện gửi tin nhắn
+      // Bắt sự kiện gửi tin nhắn
       document.getElementById("message").addEventListener("click", async () => {
         try {
           await liff.sendMessages([
@@ -39,11 +46,17 @@
               text: "Hello, world! 👋"
             }
           ]);
-          alert("Đã gửi tin nhắn thành công!");
+          alert("🎉 Đã gửi tin nhắn thành công!");
         } catch (error) {
-          console.error("Gửi tin nhắn lỗi:", error);
-          alert("Gửi tin nhắn thất bại.");
+          console.error("❌ Gửi tin nhắn lỗi:", error);
+          alert("❌ Gửi tin nhắn thất bại. Hãy kiểm tra quyền chat_message.write");
         }
+      });
+
+      // Bắt sự kiện logout
+      document.getElementById("logout").addEventListener("click", () => {
+        liff.logout();
+        location.reload();
       });
     }
 
