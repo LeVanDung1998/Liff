@@ -20,7 +20,7 @@
   <script>
     async function main() {
       await liff.init({
-        liffId: "2007340451-wYm29oGO",
+        liffId: "2007340451-wYm29oGO", // Thay liffId của bạn tại đây
         withLoginOnExternalBrowser: true
       });
 
@@ -31,7 +31,7 @@
         return;
       }
 
-      // Lấy profile
+      // Lấy thông tin profile
       const profile = await liff.getProfile();
       document.getElementById("userId").innerText = profile.userId;
       document.getElementById("displayName").innerText = profile.displayName;
