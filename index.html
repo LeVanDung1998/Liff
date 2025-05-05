@@ -43,14 +43,14 @@
       const decoded = parseJwt(accessToken);
       const scopes = decoded.scope ? decoded.scope.split(" ") : [];
       console.log(scopes);
-      if (!scopes.includes("chat_message.write")) {
-        alert(scopes);
-        //liff.logout();
-        // liff.login({
-        //   redirectUri: window.location.href,
-        // });
-        return;
-      }
+      // if (!scopes.includes("chat_message.write")) {
+      //   alert(scopes);
+      //   //liff.logout();
+      //   // liff.login({
+      //   //   redirectUri: window.location.href,
+      //   // });
+      //   return;
+      // }
 
       // Lấy thông tin profile
       const profile = await liff.getProfile();
