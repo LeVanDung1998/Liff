@@ -18,14 +18,36 @@
   </div>
 
   <script>
+    function parseJwt(token) {
+      try {
+        return JSON.parse(atob(token.split('.')[1]));
+      } catch (e) {
+        return {};
+      }
+    }
+
     async function main() {
       await liff.init({
-        liffId: "2007340451-wYm29oGO", // Thay liffId của bạn tại đây
+        liffId: "2007340451-wYm29oGO",
       });
 
       if (!liff.isLoggedIn()) {
         liff.login({
-          scope: "profile openid chat_message.write"
+          redirectUri: window.location.href,
+        });
+        return;
+      }
+
+      // Kiểm tra xem scope chat_message.write đã được cấp chưa
+      const accessToken = liff.getAccessToken();
+      const decoded = parseJwt(accessToken);
+      const scopes = decoded.scope ? decoded.scope.split(" ") : [];
+
+      if (!scopes.includes("chat_message.write")) {
+        alert("⚠️ Bạn chưa cấp quyền gửi tin nhắn. Hệ thống sẽ yêu cầu đăng nhập lại.");
+        liff.logout();
+        liff.login({
+          redirectUri: window.location.href,
         });
         return;
       }
@@ -36,7 +58,7 @@
       document.getElementById("displayName").innerText = profile.displayName;
       document.getElementById("userPicture").src = profile.pictureUrl;
 
-      // Bắt sự kiện gửi tin nhắn
+      // Gửi tin nhắn
       document.getElementById("message").addEventListener("click", async () => {
         try {
           await liff.sendMessages([
@@ -52,7 +74,7 @@
         }
       });
 
-      // Bắt sự kiện logout
+      // Đăng xuất
       document.getElementById("logout").addEventListener("click", () => {
         liff.logout();
         location.reload();
