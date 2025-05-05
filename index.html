@@ -17,6 +17,37 @@
     <button id="logout">Đăng xuất</button>
   </div>
 
+  <hr>
+  <h3>🗓️ Đặt lịch hẹn / Đăng ký dịch vụ</h3>
+  <form id="bookingForm">
+    <label>Chọn dịch vụ:</label>
+    <select id="service">
+      <option value="Cắt tóc">Cắt tóc</option>
+      <option value="Gội đầu">Gội đầu</option>
+      <option value="Massage">Massage</option>
+    </select>
+    <br><br>
+
+    <label>Chọn chuyên viên:</label>
+    <select id="staff">
+      <option value="Anh Nam">Anh Nam</option>
+      <option value="Chị Linh">Chị Linh</option>
+    </select>
+    <br><br>
+
+    <label>Chọn ngày giờ:</label>
+    <input type="datetime-local" id="bookingTime" required>
+    <br><br>
+
+    <button type="submit" id="submitBtn">✅ Xác nhận đặt lịch</button>
+    <button type="button" id="cancelBtn" style="display:none; margin-left:10px;">❌ Hủy lịch</button>
+  </form>
+
+  <div id="bookingInfo" style="display:none; margin-top:20px;">
+    <h4>📌 Lịch đã đặt:</h4>
+    <p id="bookingSummary"></p>
+  </div>
+
   <script>
     function parseJwt(token) {
       try {
@@ -38,27 +69,11 @@
         return;
       }
 
-      // Kiểm tra xem scope chat_message.write đã được cấp chưa
-      const accessToken = liff.getAccessToken();
-      const decoded = parseJwt(accessToken);
-      const scopes = decoded.scope ? decoded.scope.split(" ") : [];
-      console.log(scopes);
-      // if (!scopes.includes("chat_message.write")) {
-      //   alert(scopes);
-      //   //liff.logout();
-      //   // liff.login({
-      //   //   redirectUri: window.location.href,
-      //   // });
-      //   return;
-      // }
-
-      // Lấy thông tin profile
       const profile = await liff.getProfile();
       document.getElementById("userId").innerText = profile.userId;
       document.getElementById("displayName").innerText = profile.displayName;
       document.getElementById("userPicture").src = profile.pictureUrl;
 
-      // Gửi tin nhắn
       document.getElementById("message").addEventListener("click", async () => {
         try {
           await liff.sendMessages([
@@ -74,10 +89,76 @@
         }
       });
 
-      // Đăng xuất
       document.getElementById("logout").addEventListener("click", () => {
         liff.logout();
         location.reload();
+      });
+
+      const form = document.getElementById("bookingForm");
+      const cancelBtn = document.getElementById("cancelBtn");
+      const infoDiv = document.getElementById("bookingInfo");
+      const summary = document.getElementById("bookingSummary");
+      const submitBtn = document.getElementById("submitBtn");
+
+      let bookingData = null;
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const service = document.getElementById("service").value;
+        const staff = document.getElementById("staff").value;
+        const time = document.getElementById("bookingTime").value;
+
+        if (!time) {
+          alert("Vui lòng chọn ngày giờ");
+          return;
+        }
+
+        bookingData = { service, staff, time };
+
+        const message = `📅 Bạn đã đặt lịch:\n- Dịch vụ: ${service}\n- Chuyên viên: ${staff}\n- Thời gian: ${new Date(time).toLocaleString()}`;
+
+        try {
+          await liff.sendMessages([
+            {
+              type: "text",
+              text: message
+            }
+          ]);
+          alert("🎉 Đặt lịch thành công!");
+          // Hiển thị thông tin
+          summary.innerText = message;
+          infoDiv.style.display = "block";
+          cancelBtn.style.display = "inline-block";
+          submitBtn.innerText = "✏️ Sửa lịch";
+        } catch (err) {
+          console.error("Lỗi gửi tin nhắn:", err);
+          alert("❌ Gửi tin nhắn thất bại. Hãy kiểm tra quyền chat_message.write");
+        }
+      });
+
+      cancelBtn.addEventListener("click", async () => {
+        if (!bookingData) return;
+
+        const confirmCancel = confirm("Bạn có chắc muốn hủy lịch hẹn?");
+        if (!confirmCancel) return;
+
+        try {
+          await liff.sendMessages([
+            {
+              type: "text",
+              text: `❌ Bạn đã hủy lịch hẹn:\n- Dịch vụ: ${bookingData.service}\n- Chuyên viên: ${bookingData.staff}\n- Thời gian: ${new Date(bookingData.time).toLocaleString()}`
+            }
+          ]);
+          alert("🗑️ Đã hủy lịch hẹn.");
+          bookingData = null;
+          infoDiv.style.display = "none";
+          cancelBtn.style.display = "none";
+          submitBtn.innerText = "✅ Xác nhận đặt lịch";
+        } catch (err) {
+          console.error("Lỗi gửi tin nhắn khi hủy:", err);
+          alert("❌ Không thể gửi tin nhắn hủy lịch.");
+        }
       });
     }
 
