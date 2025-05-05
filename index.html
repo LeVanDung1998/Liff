@@ -44,7 +44,7 @@
       const scopes = decoded.scope ? decoded.scope.split(" ") : [];
 
       if (!scopes.includes("chat_message.write")) {
-        alert("⚠️ Bạn chưa cấp quyền gửi tin nhắn. Hệ thống sẽ yêu cầu đăng nhập lại.");
+        alert("⚠️ Bạn chưa cấp quyền gửi tin nhắn. Hệ thống sẽ yêu cầu đăng nhập lại.", scopes);
         liff.logout();
         liff.login({
           redirectUri: window.location.href,
